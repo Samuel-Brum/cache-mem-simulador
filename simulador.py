@@ -68,9 +68,7 @@ hex_offset = ["0x" + bin_2_hex(bin) for bin in bin_offset] # converte de volta p
 class Cache(cache_size, line_size, associativity):
   no_of_indexes = cache_size / (line_size * associativity)
   
-  initial_value = [['0', ''] for i in range(no_of_indexes)]
-  key = [str(i).rjust(3, '0') for i in range(no_of_indexes)]
-  index = {k:v for (k, v) in zip(key, initial_value)} # serve como banco de memória da cache
+  index = {k:v for (k, v) in zip([str(i).rjust(3, '0') for i in range(no_of_indexes)], [['0', ''] for i in range(no_of_indexes)])} # serve como banco de memória da cache
 
 
 
