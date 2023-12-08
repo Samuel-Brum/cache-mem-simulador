@@ -6,7 +6,7 @@ line_size = sys.argv[2]
 associativity = sys.argv[3]
 file_name = sys.argv[4]
 
-with open("exemplo.txt", mode='r') as file:
+with open(file_name, mode='r') as file:
   hex_values =  [line.strip()[2:] for line in file]
 
 hex_dict = {'0': '0000',
@@ -65,10 +65,19 @@ bin_offset = [bin[:len(bin) - offset].rjust(32, '0') for bin in bin_values] # re
 
 hex_offset = ["0x" + bin_2_hex(bin) for bin in bin_offset] # converte de volta para hexadecimal (como string)
 
-class Cache(cache_size, line_size, associativity):
-  no_of_indexes = cache_size / (line_size * associativity)
-  
-  index = {k:v for (k, v) in zip([str(i).rjust(3, '0') for i in range(no_of_indexes)], [['0', ''] for i in range(no_of_indexes)])} # serve como banco de memória da cache
+class Cache:
+  def __init__(self, cache_size, line_size, associativity):
+    self.no_of_indexes = cache_size / (line_size * associativity)
+    self.index = {k:v for (k, v) in zip([str(i).rjust(3, '0') for i in range(self.no_of_indexes)], [[0, ''] for i in range(self.no_of_indexes)])} # serve como banco de memória da cache
+    self.hits = 0
+    self.misses = 0
+
+  def search(self, address: str) -> int:
+    if address in self.index.values():
+      self.hits += 1
+    else:
+      self.misses += 1
+
 
 
 
