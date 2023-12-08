@@ -1,11 +1,62 @@
 import sys
 import math
-import queue
 
-cache_size = sys.argv[1]
-line_size = sys.argv[2]
-associativity = sys.argv[3]
+cache_size = int(sys.argv[1])
+line_size = int(sys.argv[2])
+associativity = int(sys.argv[3])
 file_name = sys.argv[4]
+
+class Cache:
+  def __init__(self, cache_size, line_size, associativity):
+    self.no_of_indexes = cache_size // (line_size * associativity)
+    self.associativity = associativity
+    self.no_of_groups = self.no_of_indexes // associativity
+    
+    self.index = dict() # serve como banco de memória da cache
+    for i in range(self.no_of_indexes):
+      self.index[i] = [0, ''] 
+
+    self.hits = 0
+    self.misses = 0
+    
+    # Dicionário das filas de acesso de cada conjunto, indexado pelo endereço inicial de cada conjunto
+    self.group_queues: dict[int, list] = dict()
+    for i in range(self.no_of_groups):
+      self.group_queues[i * associativity] = []
+
+  def search(self, address: str) -> int: 
+    address_dec = int(address, 16)
+    group_address = (address_dec % self.no_of_groups) * associativity
+
+    found = False
+    for i in range(group_address, group_address + self.associativity): # Para cada indice do grupo
+      if self.index[i][1] == address: # Encontrou o endereço dentro da memória
+        self.hits += 1
+                
+        self.group_queues[group_address].remove(i % associativity)
+        self.group_queues[group_address].append(i % associativity)
+        found = True
+        break
+        
+    if not found:
+      if len(self.group_queues[group_address]) == associativity: # Caso não tenha espaço livre substitui o último
+        index_to_replace = self.group_queues[group_address].pop(0)
+        self.index[group_address + index_to_replace][0] = 1
+        self.index[group_address + index_to_replace][1] = address
+        self.group_queues[group_address].append(index_to_replace)
+      else:                                                      # Se tiver espaço livre, usa ele
+        index_to_insert = len(self.group_queues[group_address])
+        self.index[group_address + index_to_insert][0] = 1
+        self.index[group_address + index_to_insert][1] = address
+        self.group_queues[group_address].append(index_to_insert)
+
+  def print(self):
+    output = ""
+    output += "================\n"
+    output += "IDX V ** ADDR **\n"
+    for block_address, [valid, memory_address] in self.index:
+      output += f"{str(block_address).rjust('0', 3)} {valid} {memory_address}\n"
+    return output
 
 with open(file_name, mode='r') as file:
   hex_values =  [line.strip()[2:] for line in file]
@@ -60,26 +111,24 @@ def bin_2_hex(bin: str) -> str:
 
 bin_values = [hex_2_bin(hex) for hex in hex_values] # gera lista com valores de memória em binário (como string)
 
-offset = math.ceil(math.log2(line_size))
+offset = math.ceil(math.log2(line_size)) # Desloca o número de bits necessário para representar o endereço dentro da linha
 
 bin_offset = [bin[:len(bin) - offset].rjust(32, '0') for bin in bin_values] # remove offset do cache
 
 hex_offset = ["0x" + bin_2_hex(bin) for bin in bin_offset] # converte de volta para hexadecimal (como string)
 
-class Cache:
-  def __init__(self, cache_size, line_size, associativity):
-    self.no_of_indexes = cache_size / (line_size * associativity)
-    self.index = {k:v for (k, v) in zip([str(i).rjust(3, '0') for i in range(self.no_of_indexes)], [[0, queue(maxsize=associativity)] for i in range(self.no_of_indexes)])} # serve como banco de memória da cache
-    self.hits = 0
-    self.misses = 0
+cache = Cache(cache_size, line_size, associativity) # inicializa cache
 
-  def search(self, address: str) -> int:
-    if address in self.index.values():
-      self.hits += 1
-    else:
-      self.misses += 1
-      address_dec = int(address, 16)
-      adress_index = 
+with open("output.txt", mode='w') as file:
+  for address in hex_offset:
+    cache.search(address)
+    file.write(cache.print())
+      
+  file.write(f"#hits: {cache.hits}\n")
+  file.write(f"#misses: {cache.misses}\n")
+
+    
+
 
 
 
