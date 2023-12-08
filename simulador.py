@@ -1,5 +1,6 @@
 import sys
 import math
+import queue
 
 cache_size = sys.argv[1]
 line_size = sys.argv[2]
@@ -68,7 +69,7 @@ hex_offset = ["0x" + bin_2_hex(bin) for bin in bin_offset] # converte de volta p
 class Cache:
   def __init__(self, cache_size, line_size, associativity):
     self.no_of_indexes = cache_size / (line_size * associativity)
-    self.index = {k:v for (k, v) in zip([str(i).rjust(3, '0') for i in range(self.no_of_indexes)], [[0, ''] for i in range(self.no_of_indexes)])} # serve como banco de memória da cache
+    self.index = {k:v for (k, v) in zip([str(i).rjust(3, '0') for i in range(self.no_of_indexes)], [[0, queue(maxsize=associativity)] for i in range(self.no_of_indexes)])} # serve como banco de memória da cache
     self.hits = 0
     self.misses = 0
 
@@ -77,6 +78,8 @@ class Cache:
       self.hits += 1
     else:
       self.misses += 1
+      address_dec = int(address, 16)
+      adress_index = 
 
 
 
