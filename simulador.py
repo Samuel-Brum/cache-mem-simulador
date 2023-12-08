@@ -129,12 +129,3 @@ with open("output.txt", mode='w') as file:
       
   file.write(f"\n#hits: {cache.hits}\n")
   file.write(f"#miss: {cache.misses}\n")
-
-    
-
-
-
-
-
-
-
