@@ -8,7 +8,7 @@ file_name = sys.argv[4]
 
 class Cache:
   def __init__(self, cache_size, line_size, associativity):
-    self.no_of_indexes = cache_size // (line_size * associativity)
+    self.no_of_indexes = cache_size // line_size
     self.associativity = associativity
     self.no_of_groups = self.no_of_indexes // associativity
     
@@ -39,6 +39,7 @@ class Cache:
         break
         
     if not found:
+      self.misses += 1
       if len(self.group_queues[group_address]) == associativity: # Caso não tenha espaço livre substitui o último
         index_to_replace = self.group_queues[group_address].pop(0)
         self.index[group_address + index_to_replace][0] = 1
@@ -54,8 +55,10 @@ class Cache:
     output = ""
     output += "================\n"
     output += "IDX V ** ADDR **\n"
-    for block_address, [valid, memory_address] in self.index:
-      output += f"{str(block_address).rjust('0', 3)} {valid} {memory_address}\n"
+    for block_address in range(self.no_of_indexes):
+      valid, memory_address = self.index[block_address]
+      output += f"{str(block_address).rjust(3, '0')} {valid}"
+      output += f" {memory_address}\n" if valid == 1 else "\n"
     return output
 
 with open(file_name, mode='r') as file:
@@ -124,8 +127,8 @@ with open("output.txt", mode='w') as file:
     cache.search(address)
     file.write(cache.print())
       
-  file.write(f"#hits: {cache.hits}\n")
-  file.write(f"#misses: {cache.misses}\n")
+  file.write(f"\n#hits: {cache.hits}\n")
+  file.write(f"#miss: {cache.misses}\n")
 
     
 
